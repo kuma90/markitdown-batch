@@ -17,6 +17,10 @@ import json
 import os
 import sys
 import time
+
+# Windows console UTF-8 fix
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 from datetime import datetime
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed

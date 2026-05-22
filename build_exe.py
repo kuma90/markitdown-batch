@@ -5,6 +5,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Windows console UTF-8 fix
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 HERE = Path(__file__).parent
 SCRIPT = HERE / "batch_convert.py"
 DIST = HERE / "dist"
