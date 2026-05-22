@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""打包脚本 — 将 batch_convert.py 打包成独立可执行文件"""
+"""打包脚本 — 将 MarkItDown 批量转换工具打包成独立可执行文件"""
 
 import subprocess
 import sys
@@ -10,57 +10,78 @@ if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 HERE = Path(__file__).parent
-SCRIPT = HERE / "batch_convert.py"
+GUI_SCRIPT = HERE / "batch_convert_gui.py"
+CLI_SCRIPT = HERE / "batch_convert.py"
 DIST = HERE / "dist"
 NAME = "MarkItDown批量转换"
 
-def build():
-    print(f"🔨 正在打包 {SCRIPT} ...")
-    print(f"   输出目录: {DIST}")
+BASE_FLAGS = [
+    "--clean",
+    "--distpath", str(DIST),
+    "--workpath", str(HERE / "build"),
+    "--specpath", str(HERE),
+    "--hidden-import", "requests",
+    "--hidden-import", "urllib3",
+    "--hidden-import", "charset_normalizer",
+    "--hidden-import", "certifi",
+    "--hidden-import", "idna",
+    "--hidden-import", "concurrent.futures",
+]
 
-    DIST.mkdir(exist_ok=True)
 
-    # 判断平台
-    if sys.platform == "win32":
-        ext = ".exe"
-        icon_flag = []
-    else:
-        ext = ""
-        icon_flag = []
-
+def build_one(script: Path, name: str, console: bool = True):
+    """打包单个版本"""
     cmd = [
         sys.executable, "-m", "PyInstaller",
         "--onefile",
-        "--console",
-        "--clean",
-        "--name", NAME,
-        "--distpath", str(DIST),
-        "--workpath", str(HERE / "build"),
-        "--specpath", str(HERE),
-        # 隐藏依赖
-        "--hidden-import", "requests",
-        "--hidden-import", "urllib3",
-        "--hidden-import", "charset_normalizer",
-        "--hidden-import", "certifi",
-        "--hidden-import", "idna",
-        *icon_flag,
-        str(SCRIPT),
+        "--console" if console else "--windowed",
+        "--name", name,
+        *BASE_FLAGS,
+        str(script),
     ]
+    print(f"  打包 {name} (console={console})...")
+    result = subprocess.run(cmd, cwd=str(HERE), capture_output=False)
 
-    result = subprocess.run(cmd, cwd=str(HERE))
-    if result.returncode == 0:
-        exe_path = DIST / f"{NAME}{ext}"
-        print(f"\n✅ 打包成功!")
-        print(f"   可执行文件: {exe_path}")
-        if ext == ".exe":
-            print(f"   大小: {exe_path.stat().st_size / 1024 / 1024:.1f} MB")
-        print(f"\n   直接双击运行，或命令行:")
-        print(f"   {exe_path} /path/to/folder")
-    else:
-        print(f"\n❌ 打包失败 (exit code: {result.returncode})")
-        return result.returncode
+    if result.returncode != 0:
+        print(f"  ❌ {name} 打包失败")
+        return False
+    return True
 
+
+def build():
+    DIST.mkdir(exist_ok=True)
+    ext = ".exe" if sys.platform == "win32" else ""
+
+    print(f"🔨 开始打包...")
+    print(f"   输出目录: {DIST}")
+
+    # ── GUI 版（双击即用，无控制台窗口）──────────────────
+    gui_name = NAME
+    if not build_one(GUI_SCRIPT, gui_name, console=False):
+        return 1
+
+    gui_path = DIST / f"{gui_name}{ext}"
+    size_mb = gui_path.stat().st_size / 1024 / 1024 if gui_path.exists() else 0
+    print(f"   ✅ GUI 版: {gui_path}  ({size_mb:.1f} MB)")
+
+    # ── CLI 版（命令行用）─────────────────────────────────
+    cli_name = f"{NAME}-CLI"
+    if not build_one(CLI_SCRIPT, cli_name, console=True):
+        return 1
+
+    cli_path = DIST / f"{cli_name}{ext}"
+    size_mb = cli_path.stat().st_size / 1024 / 1024 if cli_path.exists() else 0
+    print(f"   ✅ CLI 版: {cli_path}  ({size_mb:.1f} MB)")
+
+    print(f"\n✅ 打包完成!")
+    print(f"")
+    print(f"   GUI 版（双击运行，图形界面）:")
+    print(f"   {gui_path}")
+    print(f"")
+    print(f"   CLI 版（命令行使用）:")
+    print(f"   {cli_path} /path/to/folder")
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(build())

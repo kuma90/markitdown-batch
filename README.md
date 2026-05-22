@@ -2,31 +2,24 @@
 
 将文件夹内所有文档（含子文件夹）批量转为 Markdown，通过局域网 API 完成。
 
-## 快速开始
+## 🖥 图形界面版（推荐）
 
-### 1. 确保 API 服务已启动
+双击 `MarkItDown批量转换.exe` 启动 GUI：
 
-在运行 MarkItDown API 的机器上：
-```bash
-python markitdown_api.py --port 8765
+- 点击「浏览...」选择输入文件夹
+- 选择输出文件夹（留空则自动创建 `output/`）
+- 设置 API 地址和并行数
+- 点击「测试连接」确认 API 可用
+- 点击「开始扫描并转换」
+- 实时查看进度条和日志
+- 完成后自动生成 `output/转换报告.md`
+
+## ⌨ 命令行版
+
 ```
-
-### 2. 运行批量转换
-
-**Windows（exe 版本）:**
+MarkItDown批量转换-CLI.exe C:\Your\Documents
+MarkItDown批量转换-CLI.exe . --api http://192.168.1.100:8765 --workers 5
 ```
-MarkItDown批量转换.exe C:\Your\Documents
-MarkItDown批量转换.exe . --api http://192.168.1.100:8765
-```
-
-**Linux/Mac（Python 源码）:**
-```bash
-pip install requests
-python batch_convert.py /path/to/folder
-python batch_convert.py . --api http://192.168.154.129:8765 --workers 5
-```
-
-## 命令行参数
 
 | 参数 | 说明 | 默认值 |
 |------|------|--------|
@@ -34,7 +27,6 @@ python batch_convert.py . --api http://192.168.154.129:8765 --workers 5
 | `--api` | API 地址 | `http://192.168.154.129:8765` |
 | `--output, -o` | 输出目录 | 源目录下的 `output/` |
 | `--workers, -w` | 并行转换数 | 3 |
-| `--no-parallel` | 禁用并行 | 逐个转换 |
 
 ## 输出
 
@@ -45,16 +37,14 @@ python batch_convert.py . --api http://192.168.154.129:8765 --workers 5
 
 PDF · Word · Excel · PPT · HTML · EPUB · CSV · JSON · XML · 图片(OCR) · 音频(转录) · ZIP
 
-## 打包成 exe
+## 开发 / 打包
 
 ```bash
-# 安装依赖
 pip install -r requirements.txt
 
-# 打包
+# Linux
 python build_exe.py
 
-# 可执行文件在 dist/ 目录
+# Windows
+build.bat
 ```
-
-Windows 用户直接双击 `build.bat` 即可完成打包。
