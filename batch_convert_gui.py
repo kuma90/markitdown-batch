@@ -18,8 +18,11 @@ from tkinter import filedialog, messagebox, ttk
 import requests
 
 # ── Windows 控制台 UTF-8 ──────────────────────────────────────
-if sys.platform == "win32":
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.platform == "win32" and sys.stdout is not None:
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 # ── 支持的文件类型 ──────────────────────────────────────────────
 SUPPORTED_EXTENSIONS = {

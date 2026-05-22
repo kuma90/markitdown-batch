@@ -6,8 +6,11 @@ import sys
 from pathlib import Path
 
 # Windows console UTF-8 fix
-if sys.platform == "win32":
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.platform == "win32" and sys.stdout is not None:
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 HERE = Path(__file__).parent
 GUI_SCRIPT = HERE / "batch_convert_gui.py"
